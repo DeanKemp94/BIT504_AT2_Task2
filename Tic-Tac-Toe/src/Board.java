@@ -1,77 +1,111 @@
 import java.awt.*;
 
 public class Board {
-	// grid line width
-	public static final int GRID_WIDTH = 8;
-	// grid line half width
-	public static final int GRID_WIDHT_HALF = GRID_WIDTH / 2;
+	private final Cell[][] cells; // 2D array representing the board's cells
+	private final int rows;
+	private final int cols;
 
-	//2D array of ROWS-by-COLS Cell instances
-	Cell [][] cells;
-	
-	/** Constructor to create the game board */
-	public Board() {
-		cells = new Cell[GameMain.ROWS][GameMain.COLS];
-		
-		for (int row = 0; row < GameMain.ROWS; ++row) {
-			for (int col = 0; col < GameMain.COLS; ++col) {
-				cells[row][col] = new Cell(row, col);
+	// Constructor to initialize the board and its cells
+	public Board(int rows, int cols) {
+		this.rows = rows;
+		this.cols = cols;
+		cells = new Cell[rows][cols];
+		for (int row = 0; row < rows; ++row) {
+			for (int col = 0; col < cols; ++col) {
+				cells[row][col] = new Cell(row, col); // creats each cell
 			}
 		}
 	}
 
-	 /** Return true if it is a draw (i.e., no more EMPTY cells) */ 
-	public boolean isDraw() {
+	// Returns a specific cell based on its row and column
+	public Cell getCell(int row, int col) {
+		return cells[row][col];
+	}
 
-		for (int row = 0; row < GameMain.ROWS; row++) {
-			for (int col = 0; col < GameMain.COLS; col++) {
-				if (cells[row][col].content == Player.EMPTY) {
-					return false;
+	// Clears all cells on the board
+	public void clear() {
+		for (int row = 0; row < rows; ++row) {
+			for (int col = 0; col < cols; ++col) {
+				cells[row][col].clear(); // Resets the cell's content
+			}
+		}
+	}
+
+	// Checks if the board is in a draw state (checks for no empty cells)
+	public boolean isDraw() {
+		for (int row = 0; row < rows; row++) {
+			for (int col = 0; col < cols; col++) {
+				if (cells[row][col].getContent() == Player.EMPTY) {
+					return false; // Found an empty cell, not a draw
 				}
+			}
+		}
+		return true; // All cells are filled
+	}
+
+	// Checks if a player has won the game
+	public boolean hasWon(Player thePlayer, int playerRow, int playerCol) {
+		return checkRow(thePlayer, playerRow) ||
+				checkColumn(thePlayer, playerCol) ||
+				checkMainDiagonal(thePlayer) ||
+				checkOppositeDiagonal(thePlayer);
+	}
+
+	// Checks if a player has filled an entire row
+	private boolean checkRow(Player player, int row) {
+		for (int col = 0; col < cols; ++col) {
+			if (cells[row][col].getContent() != player) {
+				return false; // Row not fully filled by the player
 			}
 		}
 		return true;
 	}
-	
-	/** Return true if the current player "thePlayer" has won after making their move  */
-	public boolean hasWon(Player thePlayer, int playerRow, int playerCol) {
-		// check if player has 3-in-that-row
-		if (cells[playerRow][0].content == thePlayer && cells[playerRow][1].content == thePlayer && cells[playerRow][2].content == thePlayer) {
-			return true;
-		}
-		if (cells[0][playerCol].content == thePlayer && cells[1][playerCol].content == thePlayer && cells[2][playerCol].content == thePlayer) {
-			return  true;
-		}
-		if (cells[0][0].content == thePlayer && cells[1][1].content == thePlayer && cells[2][2].content == thePlayer) {
-			return  true;
-		}
-		if (cells[2][0].content == thePlayer && cells[1][1].content == thePlayer && cells[0][2].content == thePlayer) {
-			return  true;
-		}
-		return false;
-	}
-	
-	/**
-	 * Draws the grid (rows then columns) using constant sizes, then call on the
-	 * Cells to paint themselves into the grid
-	 */
-	public void paint(Graphics g) {
-		//draw the grid
-		g.setColor(Color.gray);
-		for (int row = 1; row < GameMain.ROWS; ++row) {          
-			g.fillRoundRect(0, GameMain.CELL_SIZE * row - GRID_WIDHT_HALF,                
-					GameMain.CANVAS_WIDTH - 1, GRID_WIDTH,                
-					GRID_WIDTH, GRID_WIDTH);       
+
+	// Checks if a player has filled an entire column
+	private boolean checkColumn(Player player, int col) {
+		for (int row = 0; row < rows; ++row) {
+			if (cells[row][col].getContent() != player) {
+				return false; // Column not fully filled by the player
 			}
-		for (int col = 1; col < GameMain.COLS; ++col) {          
-			g.fillRoundRect(GameMain.CELL_SIZE * col - GRID_WIDHT_HALF, 0,                
-					GRID_WIDTH, GameMain.CANVAS_HEIGHT - 1,                
-					GRID_WIDTH, GRID_WIDTH);
 		}
-		//Draw the cells
-		for (int row = 0; row < GameMain.ROWS; ++row) {          
-			for (int col = 0; col < GameMain.COLS; ++col) {  
-				cells[row][col].paint(g);
+		return true;
+	}
+
+	// Checks if a player has filled the main diagonal
+	private boolean checkMainDiagonal(Player player) {
+		for (int i = 0; i < rows; ++i) {
+			if (cells[i][i].getContent() != player) {
+				return false; // Main diagonal not fully filled by the player
+			}
+		}
+		return true;
+	}
+
+	// Checks if a player has filled the oppositte diagonal
+	private boolean checkOppositeDiagonal(Player player) {
+		for (int i = 0; i < rows; ++i) {
+			if (cells[i][cols - 1 - i].getContent() != player) {
+				return false; // Opposite diagonal not fully filled by the player
+			}
+		}
+		return true;
+	}
+
+	// Paints the board and its cells on the screen
+	public void paint(Graphics g, int cellSize, int padding, int strokeWidth) {
+		// Draw grid lines
+		g.setColor(Color.GRAY);
+		for (int row = 1; row < rows; ++row) {
+			g.fillRect(0, cellSize * row - strokeWidth / 2, cols * cellSize, strokeWidth);
+		}
+		for (int col = 1; col < cols; ++col) {
+			g.fillRect(cellSize * col - strokeWidth / 2, 0, strokeWidth, rows * cellSize);
+		}
+
+		// Paint each cell
+		for (int row = 0; row < rows; ++row) {
+			for (int col = 0; col < cols; ++col) {
+				cells[row][col].paint(g, cellSize, padding, strokeWidth);
 			}
 		}
 	}
