@@ -11,7 +11,7 @@ public class GameMain extends JPanel implements MouseListener {
 	public static final int CANVAS_HEIGHT = CELL_SIZE * ROWS;
 	public static final int SYMBOL_STROKE_WIDTH = 8;
 	public static final int CELL_PADDING = CELL_SIZE / 6;
-	public static final String TITLE = "Tic Tac Toe";
+	public static final String TITLE = "Tic Tac Tuah";
 
 	// Game logic and status bar for messages
 	private final GameLogic gameLogic;
@@ -86,6 +86,7 @@ public class GameMain extends JPanel implements MouseListener {
 			gameLogic.initGame();
 			repaint();
 		}
+
 	}
 
 	// Overide meethods that are used to make the mouse function as expected
